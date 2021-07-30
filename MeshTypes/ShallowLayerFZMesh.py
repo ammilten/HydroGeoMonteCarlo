@@ -110,7 +110,7 @@ def createMesh(geom, topo, Q, area=None):
 
     return mesh
     
-class PHMesh:
+class SLFZMesh:
     def __init__(self, dip=60, H=100, xpos=250, shdep=5, efile=None, dep=200, xtra=500, Q=20, zthx=5, outfile=None, area=None):
         self.dep = dep
         self.dip = dip

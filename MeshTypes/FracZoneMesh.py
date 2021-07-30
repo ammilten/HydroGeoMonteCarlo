@@ -87,7 +87,7 @@ def createMesh(geom, topo, layerz, Q, area=None):
 
     return mesh
     
-class PHMesh:
+class FZMesh:
     def __init__(self, dip=60, H=100, xpos=250, efile=None, dep=200, xtra=500, Q=20, zthx=5, deplist=[0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0 ], outfile=None, area=None):
         self.dep = dep
         self.dip = dip

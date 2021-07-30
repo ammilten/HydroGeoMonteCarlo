@@ -1,0 +1,245 @@
+#Description: Template for creating an input file
+
+SIMULATION
+  SIMULATION_TYPE SUBSURFACE
+  PROCESS_MODELS
+    SUBSURFACE_FLOW flow
+      MODE RICHARDS
+    /
+  /
+END
+
+SUBSURFACE
+
+#=========================== numerical methods ================================
+NUMERICAL_METHODS FLOW
+
+END
+
+#=========================== flow mode ========================================
+
+#=========================== chemistry ========================================
+#=========================== discretization ===================================
+GRID
+  TYPE UNSTRUCTURED ./mesh3d.ugi
+END
+
+#=========================== datasets =========================================
+
+DATASET Porosity
+  FILENAME properties.h5
+END
+
+DATASET Permeability
+  FILENAME properties.h5
+END
+
+DATASET PermX
+  FILENAME properties.h5
+END
+
+DATASET PermY
+  FILENAME properties.h5
+END
+
+DATASET PermZ
+  FILENAME properties.h5
+END
+
+#=========================== solver options ===================================
+
+#=========================== fluid properties =================================
+FLUID_PROPERTY
+  DIFFUSION_COEFFICIENT 1.d-9
+END
+
+#=========================== material properties ==============================
+MATERIAL_PROPERTY spatially_variable
+  ID 1
+  POROSITY DATASET Porosity
+  CHARACTERISTIC_CURVES default
+  PERMEABILITY
+    ANISOTROPIC
+    DATASET Perm
+  /
+END
+
+
+#=========================== characteristic curves ============================
+CHARACTERISTIC_CURVES default
+  SATURATION_FUNCTION BROOKS_COREY
+    ALPHA 
+    LAMBDA 
+    LIQUID_RESIDUAL_SATURATION 
+    SMOOTH
+  /
+  PERMEABILITY_FUNCTION MUALEM_BC_LIQ
+    LAMBDA 0.3d0
+    LIQUID_RESIDUAL_SATURATION 0.1d0
+  /
+END
+
+
+#=========================== times ============================================
+TIME
+  FINAL_TIME 
+  MAXIMUM_TIMESTEP_SIZE 10.d0 d
+END
+
+
+#=========================== output options ===================================
+OUTPUT
+  TIME_UNITS day
+  SNAPSHOT_FILE
+    FORMAT HDF5
+    PERIODIC TIME 
+    VARIABLES
+      LIQUID_SATURATION
+      LIQUID_PRESSURE
+      CAPILLARY_PRESSURE
+      LIQUID_HEAD
+      PERMEABILITY_X
+      PERMEABILITY_Z
+      POROSITY
+    /
+  /
+  OBSERVATION_FILE
+    PERIODIC TIME 
+    VARIABLES
+      LIQUID_HEAD
+      LIQUID_PRESSURE
+      LIQUID_SATURATION
+    /
+  /
+END
+
+
+
+
+REFERENCE_PRESSURE 101325.
+
+#=========================== regions ==========================================
+REGION all
+  COORDINATES
+    -500.d0 0.d0 2555.d0
+    2103.d0 5.d0 2891.d0
+  /
+END
+
+REGION surface
+  FILE srf.ss
+/
+
+REGION channel
+  FILE riv.ss
+/
+
+REGION leftchannel
+  FILE left.ss
+/
+
+REGION rightchannel
+  FILE right.ss
+/
+
+
+REGION PLM1_piezometer
+  COORDINATE 309.342d0 2.5d0 2779.939d0
+/
+REGION PLM6_piezometer
+  COORDINATE 440.880d0 2.5d0 2751.95d0
+/
+
+
+  
+
+#=========================== observation points ===============================
+OBSERVATION
+  REGION PLM1_piezometer
+  AT_CELL_CENTER
+/
+OBSERVATION
+  REGION PLM6_piezometer
+  AT_CELL_CENTER
+/
+
+
+
+#=========================== flow conditions ==================================
+FLOW_CONDITION water_table
+  TYPE
+    PRESSURE HYDROSTATIC
+  /
+  DATUM 0.d0 2.5d0 2900.d0
+  PRESSURE 0.d0
+END
+
+
+FLOW_CONDITION snowmelt_cyclic
+  TYPE
+    FLUX NEUMANN
+  /
+  CYCLIC
+  FLUX LIST
+    INTERPOLATION LINEAR
+    TIME_UNITS y
+    DATA_UNITS m/d
+    0. 0.
+    0.16 0.
+    0.29 
+    0.33 0.
+    1. 0.
+  /
+END
+
+FLOW_CONDITION seepage
+  TYPE
+    PRESSURE SEEPAGE
+  /
+  PRESSURE 0.
+END
+
+
+FLOW_CONDITION river
+  TYPE
+    PRESSURE DIRICHLET
+  /
+  PRESSURE 
+END
+
+#=========================== transport conditions =============================
+#=========================== condition couplers ===============================
+# initial condition
+INITIAL_CONDITION
+  FLOW_CONDITION water_table
+  REGION all
+END
+
+
+BOUNDARY_CONDITION topright
+  FLOW_CONDITION snowmelt_cyclic
+  REGION rightchannel
+END
+BOUNDARY_CONDITION topleft
+  FLOW_CONDITION snowmelt_cyclic
+  REGION leftchannel
+END
+
+BOUNDARY_CONDITION seepage
+  FLOW_CONDITION seepage
+  REGION surface
+END
+
+BOUNDARY_CONDITION river
+  FLOW_CONDITION river
+  REGION channel
+END
+
+
+#=========================== stratigraphy couplers ============================
+STRATA
+  REGION all
+  MATERIAL spatially_variable
+END
+END_SUBSURFACE
+
