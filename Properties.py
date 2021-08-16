@@ -19,7 +19,9 @@ def exportRegionalDataset(mesh3D, props, fname):
     permX = np.ones(mesh3D.cellCount())
     permZ = np.ones(mesh3D.cellCount())
     
-    for i in range(len(props)):
+    #print(np.unique(marker))
+    #print(props)
+    for i in range(len(props['marker'])):
         por[marker==props['marker'][i]] = props['por'][i]
         permX[marker==props['marker'][i]] = props['permX'][i]
         permZ[marker==props['marker'][i]] = props['permZ'][i]

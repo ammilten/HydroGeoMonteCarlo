@@ -1,5 +1,6 @@
-from MeshTypes import FracZoneMesh, ShallowLayerFZMesh
+from MeshTypes import FracZoneMesh, ShallowLayerFZMesh, FracZoneWithFloodplain
 import os
+import sys
 
 def exportPFLOTRANmesh(mesh3D, fname='mesh3d.ugi'):
     temp_name = 'temp_mesh3d.vtk'
@@ -48,6 +49,7 @@ class Mesh:
         meshtype, params combos:
             'FracZone'
             'ShallowLayerFZ'
+            'FracZoneFloodplain
             'Layers'
             'Uniform'
         '''
@@ -78,8 +80,25 @@ class Mesh:
                 dep = params['dep'],
                 shdep = params['shdep'])
                 
+        elif meshtype is 'FracZoneFloodplain':
+            M = FracZoneWithFloodplain.FPFZMesh(
+                efile = params['efile'],
+                dip = params['dip'],
+                H = params['H'],
+                xpos = params['xpos'],
+                xtra = params['xtra'],
+                area = params['area'],
+                Q = params['Q'],
+                dep = params['dep'],
+                fpdep = params['fpdep'],
+                fplim = params['fplim'])
+        else:
+            sys.exit('ERROR: Incorrect meshtype. Options are -FracZone- -ShallowLayerFZ-')
+                
         self.mesh = M.mesh3D
+        self.mesh2d = M.mesh
         self.topo = M.topo
+        self.geom = M.geom
         #M.show_mesh()
         
         if folder is not None:

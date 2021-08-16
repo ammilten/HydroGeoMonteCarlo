@@ -17,14 +17,14 @@ class Simulation:
             self.file = folder+'simulation.in'
         
             lines = open(template).read().splitlines()
-            lines[84] = lines[84] + simparams['FINAL_TIME']
-            lines[94] = lines[94] + simparams['OBSERVATION_INTERVAL']
-            lines[106] = lines[106] + simparams['OBSERVATION_INTERVAL']
             lines[70] = lines[70] + simparams['ALPHA']
             lines[71] = lines[71] + simparams['LAMBDA']
             lines[72] = lines[72] + simparams['LIQUID_RESIDUAL_SATURATION']
-            lines[188] = lines[188] + simparams['MAX_RECHARGE']
-            lines[206] = lines[206] + simparams['PRESSURE_RIVER']
+            lines[84] = lines[84] + simparams['FINAL_TIME']
+            lines[94] = lines[94] + simparams['OBSERVATION_INTERVAL']
+            lines[107] = lines[107] + simparams['OBSERVATION_INTERVAL']
+            lines[189] = lines[189] + simparams['MAX_RECHARGE']
+            lines[207] = lines[207] + simparams['PRESSURE_RIVER']
             open(self.file,'w').write('\n'.join(lines))
         return
         
