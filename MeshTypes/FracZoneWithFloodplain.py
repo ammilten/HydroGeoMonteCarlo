@@ -9,6 +9,7 @@ import pygimli as pg
 import pygimli.meshtools as mt
 import pygimli.physics.ert as ert
 
+import sys
 import time
 import pathlib
 from os import fspath
@@ -38,7 +39,7 @@ def createBackground(efile, xextra, botdep, shdep=0):
     return topo, bpoly
 
 # ----------Create Shallow Layer ----------------------
-def createFP(efile, fpdep, fplim):
+def createFPpoly(efile, fpdep, fplim):
 
     topo = np.genfromtxt(efile ,delimiter=',',skip_header=True)
     
@@ -55,12 +56,17 @@ def createFP(efile, fpdep, fplim):
     med = np.int(topo_fp.shape[0]/2) #Setting position for the marker
     markerpos = [topo_bot[med,0],topo_bot[med,1]+fpdep/2]
     
-    lpoly = mt.createPolygon(combo, isClosed=True, markerPosition=markerpos, marker=4)
+#    lpoly = mt.createPolygon(combo, isClosed=True, markerPosition=markerpos, marker=4)
 
-    return lpoly
+    return combo, markerpos
+    
+def createFloodplain(verts, markerpos):
+    return mt.createPolygon(verts, isClosed=True, markerPosition=markerpos, marker=4)
 
 # --------- Create Fault Polygon ------------
-def createFault(topo, xpos, dip, H, dep, shdep=0, xtra=500):
+def createFault(topo, fpverts, xpos, dip, H, dep, shdep=0, xtra=500):
+    fpverts_new = np.copy(fpverts)
+    
     topo2 = np.concatenate((np.array([[topo[0,0]-xtra, topo[0,1]]]), topo, np.array([[topo[topo.shape[0]-1,0]+xtra,topo[topo.shape[0]-1,1]]])))
     topo2[:,1] = topo2[:,1]-shdep
     
@@ -75,25 +81,48 @@ def createFault(topo, xpos, dip, H, dep, shdep=0, xtra=500):
 
     Dxbot = H/2/np.sin(np.deg2rad(dip))
 
-    LR = (xbot+Dxbot,zbot)
-    LL = (xbot-Dxbot,zbot)
+    LR = np.array((xbot+Dxbot,zbot))[np.newaxis,:]
+    LL = np.array((xbot-Dxbot,zbot))[np.newaxis,:]
 
-    zfR = zbot + (LR[0]-topo2[:,0])*np.tan(np.deg2rad(dip))
+    zfR = zbot + (LR[0,0]-topo2[:,0])*np.tan(np.deg2rad(dip))
     diffR = interpolate.interp1d(zfR-topo2[:,1],topo2[:,0])
-    UR = (float(diffR(0)), float(Z(diffR(0))) )
+    UR = np.array((float(diffR(0)), float(Z(diffR(0))) ))[np.newaxis,:]
+    if UR[0,0] > np.min(fpverts[:,0]):
+        midind = np.int(fpverts.shape[0]/2)
+        botverts = np.flipud(fpverts[midind:,:])
+        
+        zfR = zbot + (LR[0,0]-botverts[:,0])*np.tan(np.deg2rad(dip))
+        diffR = interpolate.interp1d(zfR-botverts[:,1],botverts[:,0])
+        
+        Zfp = interpolate.interp1d(botverts[:,0],botverts[:,1])
+        
+        UR = np.array((float(diffR(0)), float(Zfp(diffR(0))) ))
+        botverts_new_L = np.flipud(botverts[botverts[:,0]<UR[0],:])
+        botverts_new_R = np.flipud(botverts[botverts[:,0]>UR[0],:])
+        botverts_new = np.concatenate((botverts_new_R, UR[np.newaxis,:], botverts_new_L))
+        fpverts_new = np.concatenate((fpverts[:midind], botverts_new))
+        
+        inds_left_of_intersect = botverts[:,0] < UR[0]
+        
+        UR_fp = np.flipud(botverts[inds_left_of_intersect,:])
+        UR_total = np.concatenate((UR[np.newaxis,:], UR_fp, fpverts[0,:][np.newaxis,:]))
+        UR = np.flipud(UR_total)
+        #sys.exit("Cannot handle fracture zone intersecting floodplain yet")
 
-    zfL = zbot + (LL[0]-topo2[:,0])*np.tan(np.deg2rad(dip))
+    zfL = zbot + (LL[0,0]-topo2[:,0])*np.tan(np.deg2rad(dip))
     diffL = interpolate.interp1d(zfL-topo2[:,1],topo2[:,0])
-    UL = (float(diffL(0)), float(Z(diffL(0))) )
+    UL = np.array((float(diffL(0)), float(Z(diffL(0))) ))[np.newaxis,:]    
     
-    idxabove = (topo2[topo2[:,0] > UL[0],0]).argmin() + (topo2[topo2[:,0] < UL[0],0]).shape[0]
-    idxbelow = (topo2[topo2[:,0] < UR[0],0]).argmax()
+    idxabove = (topo2[topo2[:,0] > UL[0,0],0]).argmin() + (topo2[topo2[:,0] < UL[0,0],0]).shape[0]
+    idxbelow = (topo2[topo2[:,0] < UR[0,0],0]).argmax()
 
-    middles = [(topo[j,0],topo[j,1] - shdep) for j in range(idxabove-1,idxbelow)]
-    verts = [LL, UL] + middles + [UR,LR]
+    middles = np.array([(topo[j,0],topo[j,1] - shdep) for j in range(idxabove-1,idxbelow)])
+
+    #verts = [LL, UL] + middles + [UR,LR]
+    verts = np.concatenate((LL,UL,middles,UR,LR))
     fpoly = mt.createPolygon(verts, isClosed=True, addNodes=0, marker=1)
 
-    return fpoly
+    return fpoly, fpverts_new
 
 # ---------- Create mesh ---------------------
 def createMesh(geom, topo, Q, area=None):
@@ -131,12 +160,13 @@ class FPFZMesh:
         self.topo, bpoly = createBackground(self.efile, self.xtra, self.dep)   
 #        print('Creating Surface Layer')  
         time.sleep(5)
-        lpoly = createFP(self.efile, self.fpdep, self.fplim)
+        fpverts, markerpos = createFPpoly(self.efile, self.fpdep, self.fplim)
 #        print('Creating Fracture Zone')
         time.sleep(5)
-        fpoly = createFault(self.topo, self.xpos, self.dip, self.H, self.dep, xtra=self.xtra)
+        fpoly,fpverts_new = createFault(self.topo, fpverts, self.xpos, self.dip, self.H, self.dep, xtra=self.xtra)
 #        print('Creating Geometry')
         time.sleep(5)
+        lpoly = createFloodplain(fpverts_new, markerpos)
         self.geom = bpoly+fpoly+lpoly
         
 #        print('Creating Mesh')
