@@ -17,7 +17,7 @@ from pathlib import Path
 import warnings
 from Realization import Realization
 
-def reformat(sim, params):
+def reformat(sim, params, anisotropy_ratio=False):
     params2 = {
         'efile':sim['efile'],        
         'dip':params['dip'],
@@ -32,11 +32,22 @@ def reformat(sim, params):
         'fpdep':params['fpdep'], #FracZoneFloodplain only
         'fplim':sim['fplim'] #FracZoneFloodplain only
     } 
+    if anisotropy_ratio:
+        por = [params['por_bk'], params['por_fz'], params['por_bk'], params['por_sl'], params['por_fp']]
+        permX = [params['Kh_bk'], params['Kh_fz'], params['Kh_bk'], params['Kh_sl'], params['Kh_fp']]
+        permZ = [params['Kh_bk']*params['Kr_bk'], params['Kh_fz']*params['Kr_fz'], params['Kh_bk']*params['Kr_bk'], params['Kh_sl']*params['Kr_sl'], params['Kh_fp']*params['Kr_fp']]
+        
+    else:
+        por = [params['por_bk'], params['por_fz'], params['por_bk'], params['por_sl'], params['por_fp']]
+        permX = [params['Kh_bk'], params['Kh_fz'], params['Kh_bk'], params['Kh_sl'], params['Kh_fp']]
+        permZ = [params['Kv_bk'], params['Kv_fz'], params['Kv_bk'], params['Kv_sl'], params['Kv_fp']]
+    
+        
     props = {
         'marker': [0, 1, 2, 3, 4],
-        'por': [params['por_bk'], params['por_fz'], params['por_bk'], params['por_sl'], params['por_fp']],
-        'permX': [params['Kh_bk'], params['Kh_fz'], params['Kh_bk'], params['Kh_sl'], params['Kh_fp']], 
-        'permZ': [params['Kv_bk'], params['Kv_fz'], params['Kv_bk'], params['Kv_sl'], params['Kv_fp']]
+        'por': por,
+        'permX': permX, 
+        'permZ': permZ
     }
     sim2 = {
         'FINAL_TIME': '{:.1f}d0 yr'.format(sim['tend']), 
@@ -49,9 +60,9 @@ def reformat(sim, params):
     } 
     return params2, props, sim2
 
-def run(sim, params, folder, overwrite=False, num=None):
+def run(sim, params, folder, overwrite=False, num=None, aniso=True):
     meshtype = 'FracZoneFloodplain'
-    params2, props, sim2 = reformat(sim, params)    
+    params2, props, sim2 = reformat(sim, params, anisotropy_ratio=aniso)    
     folder2, exists = make_directory(folder)
     if not exists:
         real = Realization(meshtype, params2, props, sim2, folder=folder2)
@@ -84,7 +95,7 @@ def sample(parameter_dict, N, seed=111):
     '''
     This function takes a parameter dictionary and creates a pandas dataframe, with the keys as column headers and entries as either random samples from the distribution or constant parameters
     '''
-    
+    np.random.seed(seed)
     tbl = pd.DataFrame()
     for key, value in parameter_dict.items():
         if isinstance(value, int) or isinstance(value, float):
@@ -103,12 +114,12 @@ def import_simulation(fname):
     return sim, params
 
 class MonteCarlo:
-    def __init__(self, mcfolder, sim=None, params=None, from_file=None):
+    def __init__(self, mcfolder, sim=None, params=None, from_file=None, anisotropy_ratio=True):
         '''
         This constructor does...
         '''
         self.mcfolder, _ = make_directory(mcfolder)
-        
+        self.anisotropy_ratio = anisotropy_ratio
         
         if from_file is not None:
             self.sim, self.params = import_simulation(from_file)
@@ -132,11 +143,10 @@ class MonteCarlo:
         if number is 'all':
             for i in range(len(self.tbl)):
                 parameters = self.tbl.loc[i,:].to_dict()
-                run(self.sim, parameters, self.mcfolder+str(i), num=number, overwrite=overwrite)
-            print('Not yet implemented')
+                run(self.sim, parameters, self.mcfolder+str(i), num=number, overwrite=overwrite, aniso=self.anisotropy_ratio)
         else:
             parameters = self.tbl.loc[number,:].to_dict()
-            run(self.sim, parameters, self.mcfolder+str(number), num=number, overwrite=overwrite)
+            run(self.sim, parameters, self.mcfolder+str(number), num=number, overwrite=overwrite, aniso=self.anisotropy_ratio)
             
         return
             
