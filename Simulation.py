@@ -1,7 +1,7 @@
 import pathlib
 from os import fspath
 DEFAULTPATH = fspath(pathlib.Path(__file__).parent.absolute())
-
+   
 
 class Simulation:
     def __init__(self, simparams, folder=None, template=None):
