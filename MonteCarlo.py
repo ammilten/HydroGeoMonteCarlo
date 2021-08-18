@@ -49,24 +49,36 @@ def reformat(sim, params):
     } 
     return params2, props, sim2
 
-def run(sim, params, folder):
+def run(sim, params, folder, overwrite=False, num=None):
     meshtype = 'FracZoneFloodplain'
     params2, props, sim2 = reformat(sim, params)    
-    folder2 = make_directory(folder)
-    real = Realization(meshtype, params2, props, sim2, folder=folder2)
-    real.realize()
+    folder2, exists = make_directory(folder)
+    if not exists:
+        real = Realization(meshtype, params2, props, sim2, folder=folder2)
+        real.realize()
+    elif exists and overwrite:
+        warnings.warn('Realization '+str(num)+' already exists and will be overwritten.')
+        real = Realization(meshtype, params2, props, sim2, folder=folder2)
+        real.realize()
+    elif exists and not overwrite:
+        warnings.warn('Skipping realization '+str(num)+' (already exists)')
+    else:
+        sys.exit('Overwrite status encountered an error.')
+        
     return
 
 def make_directory(mcfolder):
+    exists = False
     if not mcfolder.endswith('/'):
         mcfolder = mcfolder + '/'
     
     try:
         Path(mcfolder).mkdir()
     except OSError as e:
-        warnings.warn('Warning: '+mcfolder+' already exists')
+        exists = True
+        warnings.warn(mcfolder+' already exists')
         
-    return mcfolder
+    return mcfolder, exists
 
 def sample(parameter_dict, N, seed=111):
     '''
@@ -95,7 +107,7 @@ class MonteCarlo:
         '''
         This constructor does...
         '''
-        self.mcfolder = make_directory(mcfolder)
+        self.mcfolder, _ = make_directory(mcfolder)
         
         
         if from_file is not None:
@@ -118,10 +130,13 @@ class MonteCarlo:
         This method does...
         '''
         if number is 'all':
+            for i in range(len(self.tbl)):
+                parameters = self.tbl.loc[i,:].to_dict()
+                run(self.sim, parameters, self.mcfolder+str(i), num=number, overwrite=overwrite)
             print('Not yet implemented')
         else:
             parameters = self.tbl.loc[number,:].to_dict()
-            run(self.sim, parameters, self.mcfolder+str(number))
+            run(self.sim, parameters, self.mcfolder+str(number), num=number, overwrite=overwrite)
             
         return
             
