@@ -18,7 +18,7 @@ class Simulation:
         
             lines = open(template).read().splitlines()
             lines[70] = lines[70] + simparams['ALPHA']
-            lines[71] = lines[71] + simparams['LAMBDA']
+            lines[71] = lines[71] + simparams['M']
             lines[72] = lines[72] + simparams['LIQUID_RESIDUAL_SATURATION']
             lines[84] = lines[84] + simparams['FINAL_TIME']
             lines[94] = lines[94] + simparams['OBSERVATION_INTERVAL']

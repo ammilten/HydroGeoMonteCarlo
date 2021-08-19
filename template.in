@@ -67,11 +67,11 @@ END
 
 #=========================== characteristic curves ============================
 CHARACTERISTIC_CURVES default
-  SATURATION_FUNCTION BROOKS_COREY
+  SATURATION_FUNCTION VAN_GENUCHTEN
     ALPHA 
-    LAMBDA 
+    M 
     LIQUID_RESIDUAL_SATURATION 
-    SMOOTH
+#    SMOOTH
   /
   PERMEABILITY_FUNCTION MUALEM_BC_LIQ
     LAMBDA 0.3d0
