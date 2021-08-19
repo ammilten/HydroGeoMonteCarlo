@@ -17,6 +17,7 @@ from pathlib import Path
 import warnings
 from Realization import Realization
 import pickle as pkl
+import sys
 
 def reformat(sim, params, anisotropy_ratio=False):
     params2 = {
@@ -141,7 +142,7 @@ class MonteCarlo:
         else:
             self.sim = sim
             self.params = params
-            save_simulation_setup(self.sim, self.params, mcfolder+'mc_setup.pkl')
+            save_simulation_setup(self.sim, self.params, self.mcfolder+'mc_setup.pkl')
             
         return
         
