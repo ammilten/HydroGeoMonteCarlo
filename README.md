@@ -56,7 +56,7 @@ mc_object = MC.MonteCarlo(mcfolder) # initialize object using destination folder
 mc_object.sim = simulation # simulation setup
 mc_object.params = parameters # uncertain parameters
 mc_object.SampleParameters(N=5) # generate parameter table
-mc_object.realize('all') # perform simulations
+mc_object.Realize('all') # perform simulations
 
 # Data are stored at the path mc_object.mcfolder
 ```

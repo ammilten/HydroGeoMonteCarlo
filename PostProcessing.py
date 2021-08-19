@@ -75,7 +75,7 @@ def load_mc_data(mcfolder, N='all'):
     return data
     
     
-def plot_realization(mcfolder, real, show_observed=False, linewidth=3, cPLM1=[.5,.5,.5], cPLM6=[.68,.85,.9], tshift=365, tstart=360, dt=30):
+def plot_realization(mcfolder, real, wells=['PLM1','PLM6'], show_observed=False, linewidth=3, cPLM1=[.5,.5,.5], cPLM6=[.68,.85,.9], tshift=365, tstart=360, dt=30):
     '''
     Plots water level elevation data from one or multiple realizations.
     Inputs
@@ -118,21 +118,25 @@ def plot_realization(mcfolder, real, show_observed=False, linewidth=3, cPLM1=[.5
     for i in N:
         sim = load_simulated_data(mcfolder+str(i))
         
-        piez1 = (sim["PLM1 Liquid Pressure [Pa]"]-pref) / rho / g
-        wte1 = piez1 + PLM1['Elevation'] - np.mean(PLM1['screen_depth'])
-        wtd1 = PLM1['Elevation'] - wte1
-
-        piez6 = (sim["PLM6 Liquid Pressure [Pa]"]-pref) / rho / g
-        wte6 = piez6 + PLM6['Elevation'] - np.mean(PLM6['screen_depth'])
-        wtd6 = PLM6['Elevation'] - wte6
         
-        plt.plot(sim['Time [day]'][istart:]-tshift,wtd6[12:], color=cPLM6, label='PLM6 (real '+str(i)+')', linewidth=linewidth)
 
-        plt.plot(sim['Time [day]'][istart:]-tshift,wtd1[12:], color=cPLM1, label='PLM1 (real '+str(i)+')', linewidth=linewidth)
-        
+        if 'PLM6' in wells or wells == 'PLM6':
+            piez6 = (sim["PLM6 Liquid Pressure [Pa]"]-pref) / rho / g
+            wte6 = piez6 + PLM6['Elevation'] - np.mean(PLM6['screen_depth'])
+            wtd6 = PLM6['Elevation'] - wte6
+            plt.plot(sim['Time [day]'][istart:]-tshift,wtd6[12:], color=cPLM6, label='PLM6 (real '+str(i)+')', linewidth=linewidth)
+            
+        if 'PLM1' in wells or wells == 'PLM1':
+            piez1 = (sim["PLM1 Liquid Pressure [Pa]"]-pref) / rho / g
+            wte1 = piez1 + PLM1['Elevation'] - np.mean(PLM1['screen_depth'])
+            wtd1 = PLM1['Elevation'] - wte1
+            plt.plot(sim['Time [day]'][istart:]-tshift,wtd1[12:], color=cPLM1, label='PLM1 (real '+str(i)+')', linewidth=linewidth)
+  
     if show_observed:
-        plt.plot(tetsu['day'], PLM6['Elevation'] - tetsu['PLM6 Piezometer WTE'],'-b', linewidth=linewidth,label='PLM6 (Obs)')
-        plt.plot(tetsu['day'], PLM1['Elevation'] - tetsu['PLM1 Piezometer WTE'],'-k', linewidth=linewidth, label='PLM1 (Obs)')
+        if 'PLM6' in wells or wells == 'PLM6':
+            plt.plot(tetsu['day'], PLM6['Elevation'] - tetsu['PLM6 Piezometer WTE'],'-b', linewidth=linewidth,label='PLM6 (Obs)')
+        if 'PLM1' in wells or wells == 'PLM1':
+            plt.plot(tetsu['day'], PLM1['Elevation'] - tetsu['PLM1 Piezometer WTE'],'-k', linewidth=linewidth, label='PLM1 (Obs)')
         
     plt.gca().invert_yaxis()
     plt.ylabel('Water Depth (mbgs)',fontsize=16)

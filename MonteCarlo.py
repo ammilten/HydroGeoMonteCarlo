@@ -13,11 +13,15 @@
 import numpy as np
 import pandas as pd
 import scipy.stats as st
+
 from pathlib import Path
 import warnings
+
 from Realization import Realization
+
 import pickle as pkl
 import sys
+import time
 
 def reformat(sim, params, anisotropy_ratio=False):
     params2 = {
@@ -63,22 +67,25 @@ def reformat(sim, params, anisotropy_ratio=False):
     return params2, props, sim2
 
 def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True):
-#    meshtype = 'FracZoneFloodplain'
+    complete = False
+
     params2, props, sim2 = reformat(sim, params, anisotropy_ratio=aniso)    
     folder2, exists = make_directory(folder)
     if not exists:
         real = Realization(meshtype, params2, props, sim2, folder=folder2)
         real.realize()
+        complete = True
     elif exists and overwrite:
         warnings.warn('Realization '+str(num)+' already exists and will be overwritten.')
         real = Realization(meshtype, params2, props, sim2, folder=folder2)
         real.realize()
+        complete = True
     elif exists and not overwrite:
         warnings.warn('Skipping realization '+str(num)+' (already exists)')
     else:
         sys.exit('Overwrite status encountered an error.')
         
-    return
+    return complete
 
 def make_directory(mcfolder, show_warning=False):
     exists = False
@@ -155,18 +162,25 @@ class MonteCarlo:
         self.tbl.to_csv(self.mcfolder+'parameter_table.csv')
         return self.tbl
 
-    def realize(self, number, parallel=False, overwrite=False, meshtype='FracZoneFloodplain'):
+    def Realize(self, number, parallel=False, overwrite=False, meshtype='FracZoneFloodplain'):
         '''
         This method does...
         '''
+        nreals = 0
+        st = time.time()
         if number is 'all':
             for i in range(len(self.tbl)):
                 parameters = self.tbl.loc[i,:].to_dict()
-                run(self.sim, parameters, self.mcfolder+str(i), meshtype, num=i, overwrite=overwrite, aniso=self.anisotropy_ratio)
+                complete = run(self.sim, parameters, self.mcfolder+str(i), meshtype, num=i, overwrite=overwrite, aniso=self.anisotropy_ratio)
+                nreals += complete
         else:
             parameters = self.tbl.loc[number,:].to_dict()
             run(self.sim, parameters, self.mcfolder+str(number), meshtype, num=number, overwrite=overwrite, aniso=self.anisotropy_ratio)
-            
+            nreals += 1
+        et = time.time()
+        simtime_mins = np.round((et-st)/60, 2)
+        print('Time to simulate ' + str(nreals) + ' realizations: ' + str(simtime_mins) + ' minutes')
+        
         return
             
             
