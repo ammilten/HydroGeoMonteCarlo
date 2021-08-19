@@ -16,6 +16,7 @@ import scipy.stats as st
 from pathlib import Path
 import warnings
 from Realization import Realization
+import pickle as pkl
 
 def reformat(sim, params, anisotropy_ratio=False):
     params2 = {
@@ -60,8 +61,8 @@ def reformat(sim, params, anisotropy_ratio=False):
     } 
     return params2, props, sim2
 
-def run(sim, params, folder, overwrite=False, num=None, aniso=True):
-    meshtype = 'FracZoneFloodplain'
+def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True):
+#    meshtype = 'FracZoneFloodplain'
     params2, props, sim2 = reformat(sim, params, anisotropy_ratio=aniso)    
     folder2, exists = make_directory(folder)
     if not exists:
@@ -78,7 +79,7 @@ def run(sim, params, folder, overwrite=False, num=None, aniso=True):
         
     return
 
-def make_directory(mcfolder):
+def make_directory(mcfolder, show_warning=False):
     exists = False
     if not mcfolder.endswith('/'):
         mcfolder = mcfolder + '/'
@@ -87,7 +88,8 @@ def make_directory(mcfolder):
         Path(mcfolder).mkdir()
     except OSError as e:
         exists = True
-        warnings.warn(mcfolder+' already exists')
+        if show_warning:
+            warnings.warn(mcfolder+' already exists')
         
     return mcfolder, exists
 
@@ -95,9 +97,11 @@ def sample(parameter_dict, N, seed=111):
     '''
     This function takes a parameter dictionary and creates a pandas dataframe, with the keys as column headers and entries as either random samples from the distribution or constant parameters
     '''
-    np.random.seed(seed)
+#    np.random.seed(seed)
     tbl = pd.DataFrame()
     for key, value in parameter_dict.items():
+        np.random.seed(seed)
+        seed = seed+1 # for each key use a different seed
         if isinstance(value, int) or isinstance(value, float):
             tbl[key] = np.ones(N) * value
         else:
@@ -109,16 +113,27 @@ def import_simulation(fname):
     '''
     This function takes a .mc file and reads it into parameter and simulation dictionaries
     '''
-    sim = None
-    params = None
+    with open(fname, 'rb') as f:
+        sim = pkl.load(f)
+        params = pkl.load(f)
+        
     return sim, params
+    
+def save_simulation_setup(sim, params, fname):
+    with open(fname,'wb') as f:
+        pkl.dump(sim, f)
+        pkl.dump(params, f)
 
 class MonteCarlo:
-    def __init__(self, mcfolder, sim=None, params=None, from_file=None, anisotropy_ratio=True):
+    def __init__(self, mcfolder, sim=None, params=None, from_file=None, anisotropy_ratio=True, overwrite=False):
         '''
         This constructor does...
         '''
-        self.mcfolder, _ = make_directory(mcfolder)
+        
+        self.mcfolder, exists = make_directory(mcfolder, show_warning=True)
+        if exists and not overwrite:
+            sys.exit('Folder already exists. Exiting. Use \"overwrite=True\" to overwrite data in this folder. You can still skip over specific realizations using \"MonteCarlo.realize(\'all\', overwrite=False)\".')
+             
         self.anisotropy_ratio = anisotropy_ratio
         
         if from_file is not None:
@@ -126,7 +141,10 @@ class MonteCarlo:
         else:
             self.sim = sim
             self.params = params
+            save_simulation_setup(self.sim, self.params, mcfolder+'mc_setup.pkl')
+            
         return
+        
         
     def SampleParameters(self, N):
         '''
@@ -136,17 +154,17 @@ class MonteCarlo:
         self.tbl.to_csv(self.mcfolder+'parameter_table.csv')
         return self.tbl
 
-    def realize(self, number, parallel=False, overwrite=False):
+    def realize(self, number, parallel=False, overwrite=False, meshtype='FracZoneFloodplain'):
         '''
         This method does...
         '''
         if number is 'all':
             for i in range(len(self.tbl)):
                 parameters = self.tbl.loc[i,:].to_dict()
-                run(self.sim, parameters, self.mcfolder+str(i), num=number, overwrite=overwrite, aniso=self.anisotropy_ratio)
+                run(self.sim, parameters, self.mcfolder+str(i), meshtype, num=i, overwrite=overwrite, aniso=self.anisotropy_ratio)
         else:
             parameters = self.tbl.loc[number,:].to_dict()
-            run(self.sim, parameters, self.mcfolder+str(number), num=number, overwrite=overwrite, aniso=self.anisotropy_ratio)
+            run(self.sim, parameters, self.mcfolder+str(number), meshtype, num=number, overwrite=overwrite, aniso=self.anisotropy_ratio)
             
         return
             

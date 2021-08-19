@@ -1,4 +1,4 @@
-from MeshTypes import FracZoneMesh, ShallowLayerFZMesh, FracZoneWithFloodplain
+from MeshTypes import FracZoneMesh, ShallowLayerFZMesh, FracZoneWithFloodplain, Uniform
 import os
 import sys
 
@@ -92,6 +92,14 @@ class Mesh:
                 dep = params['dep'],
                 fpdep = params['fpdep'],
                 fplim = params['fplim'])
+        elif meshtype is 'Uniform':
+            M = Uniform.UniformMesh(
+                efile = params['efile'],
+                xtra = params['xtra'],
+                area = params['area'],
+                Q = params['Q'],
+                deplist = params['deplist'],
+                dep = params['dep'])
         else:
             sys.exit('ERROR: Incorrect meshtype. Options are -FracZone- -ShallowLayerFZ-')
                 
