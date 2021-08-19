@@ -55,7 +55,7 @@ def reformat(sim, params, anisotropy_ratio=False):
         'FINAL_TIME': '{:.1f}d0 yr'.format(sim['tend']), 
         'OBSERVATION_INTERVAL': '{:.1f}d0 day'.format(sim['obs_int']), 
         'ALPHA': '{:.2e}'.format(params['alpha']).replace('e','d'), #Brooks-Corey
-        'LAMBDA': '{:.2f}d0'.format(params['lambda']), #Brooks-Corey
+        'M': '{:.2f}d0'.format(params['m']), #Van Genuchten
         'LIQUID_RESIDUAL_SATURATION': '{:.2f}d0'.format(params['satresid']), #Brooks-Corey
         'MAX_RECHARGE': '{:f}d0'.format(params['max_recharge']), #m/day
         'PRESSURE_RIVER': '{:.2f}d0'.format(sim['riv_pressure']) #Pa
