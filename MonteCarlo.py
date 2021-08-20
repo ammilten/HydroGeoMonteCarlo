@@ -79,7 +79,7 @@ def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True):
             complete = True
         except:
             failed = True
-            print('Realization at ' + folder2 + ' failed.')
+            print('Failed: ' + folder2)
     elif exists and overwrite:
         print('Overwriting realization '+str(num)+'.')
         try:
@@ -88,7 +88,7 @@ def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True):
             complete = True
         except:
             failed = True
-            print('Realization at ' + folder2 + ' failed.')
+            print('Failed: ' + folder2)
             
     elif exists and not overwrite:
         print('Skipping realization '+str(num)+' (already exists).')
@@ -181,11 +181,13 @@ class MonteCarlo:
         st = time.time()
         if number is 'all':
             for i in range(len(self.tbl)):
+                print('Simulating realization ' + str(i))
                 parameters = self.tbl.loc[i,:].to_dict()
                 complete, fail = run(self.sim, parameters, self.mcfolder+str(i), meshtype, num=i, overwrite=overwrite, aniso=self.anisotropy_ratio)
                 nreals += complete
                 nfails += fail
         else:
+            print('Simulating realization ' + str(number))
             parameters = self.tbl.loc[number,:].to_dict()
             complete, fail = run(self.sim, parameters, self.mcfolder+str(number), meshtype, num=number, overwrite=overwrite, aniso=self.anisotropy_ratio)
             nreals += complete
