@@ -68,20 +68,30 @@ def reformat(sim, params, anisotropy_ratio=False):
 
 def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True):
     complete = False
+    failed = False
 
     params2, props, sim2 = reformat(sim, params, anisotropy_ratio=aniso)    
     folder2, exists = make_directory(folder)
     if not exists:
-        real = Realization(meshtype, params2, props, sim2, folder=folder2)
-        real.realize()
-        complete = True
+        try:
+            real = Realization(meshtype, params2, props, sim2, folder=folder2)
+            real.realize()
+            complete = True
+        except:
+            failed = True
+            print('Realization at ' + folder2 + ' failed.')
     elif exists and overwrite:
-        warnings.warn('Realization '+str(num)+' already exists and will be overwritten.')
-        real = Realization(meshtype, params2, props, sim2, folder=folder2)
-        real.realize()
-        complete = True
+        print('Overwriting realization '+str(num)+'.')
+        try:
+            real = Realization(meshtype, params2, props, sim2, folder=folder2)
+            real.realize()
+            complete = True
+        except:
+            failed = True
+            print('Realization at ' + folder2 + ' failed.')
+            
     elif exists and not overwrite:
-        warnings.warn('Skipping realization '+str(num)+' (already exists)')
+        print('Skipping realization '+str(num)+' (already exists).')
     else:
         sys.exit('Overwrite status encountered an error.')
         
@@ -167,19 +177,25 @@ class MonteCarlo:
         This method does...
         '''
         nreals = 0
+        nfails = 0
         st = time.time()
         if number is 'all':
             for i in range(len(self.tbl)):
                 parameters = self.tbl.loc[i,:].to_dict()
-                complete = run(self.sim, parameters, self.mcfolder+str(i), meshtype, num=i, overwrite=overwrite, aniso=self.anisotropy_ratio)
+                complete, fail = run(self.sim, parameters, self.mcfolder+str(i), meshtype, num=i, overwrite=overwrite, aniso=self.anisotropy_ratio)
                 nreals += complete
+                nfails += fail
         else:
             parameters = self.tbl.loc[number,:].to_dict()
-            run(self.sim, parameters, self.mcfolder+str(number), meshtype, num=number, overwrite=overwrite, aniso=self.anisotropy_ratio)
-            nreals += 1
+            complete, fail = run(self.sim, parameters, self.mcfolder+str(number), meshtype, num=number, overwrite=overwrite, aniso=self.anisotropy_ratio)
+            nreals += complete
+            nfails += fail
+            
         et = time.time()
         simtime_mins = np.round((et-st)/60, 2)
-        print('Time to simulate ' + str(nreals) + ' realizations: ' + str(simtime_mins) + ' minutes')
+        print('Realizations simulated: ' + str(nreals))
+        print('Failed realizations: ' + str(nfails))
+        print('Simulation time: ' + str(simtime_mins) + ' minutes')
         
         return
             
