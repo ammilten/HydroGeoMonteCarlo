@@ -65,6 +65,11 @@ def reformat(sim, params, anisotropy_ratio=False):
         'PRESSURE_RIVER': '{:.2f}d0'.format(sim['riv_pressure']) #Pa
     } 
     return params2, props, sim2
+    
+def check_for_results(folder, exists):
+    
+    #sys.exit('Error: check_for_results has not been finished')
+    return exists
 
 def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True):
     complete = False
@@ -72,6 +77,9 @@ def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True):
 
     params2, props, sim2 = reformat(sim, params, anisotropy_ratio=aniso)    
     folder2, exists = make_directory(folder)
+    if exists:
+        exists = check_for_results(folder2,exists)
+        
     if not exists:
         print('Simulating ' + folder2)
         try:
@@ -86,6 +94,38 @@ def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True):
         try:
             real = Realization(meshtype, params2, props, sim2, folder=folder2)
             real.realize()
+            complete = True
+        except:
+            failed = True
+            print('    Failed: ' + folder2)
+            
+    elif exists and not overwrite:
+        print('Skipping realization '+str(num)+' (already exists).')
+    else:
+        sys.exit('Overwrite status encountered an error.')
+        
+    return complete, failed
+    
+def setup(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True):
+    complete = False
+    failed = False
+
+    params2, props, sim2 = reformat(sim, params, anisotropy_ratio=aniso)    
+    folder2, exists = make_directory(folder)
+    if not exists:
+        print('Preparing ' + folder2)
+        try:
+            real = Realization(meshtype, params2, props, sim2, folder=folder2)
+#            real.realize()
+            complete = True
+        except:
+            failed = True
+            print('    Failed: ' + folder2)
+    elif exists and overwrite:
+        print('Overwriting setup for realization '+str(num)+'.')
+        try:
+            real = Realization(meshtype, params2, props, sim2, folder=folder2)
+#            real.realize()
             complete = True
         except:
             failed = True
@@ -172,6 +212,27 @@ class MonteCarlo:
         self.tbl = sample(self.params, N)
         self.tbl.to_csv(self.mcfolder+'parameter_table.csv')
         return self.tbl
+        
+    def SetupRealization(self, number, overwrite=False, meshtype='FracZoneFloodplain'):
+        '''
+        
+        '''
+        nreals = 0
+        nfails = 0
+        st = time.time()
+        if number is 'all':
+            for i in range(len(self.tbl)):
+                parameters = self.tbl.loc[i,:].to_dict()
+                complete, fail = setup(self.sim, parameters, self.mcfolder+str(i), meshtype, num=i, overwrite=overwrite, aniso=self.anisotropy_ratio)
+                nreals += complete
+                nfails += fail
+        else:
+            parameters = self.tbl.loc[number,:].to_dict()
+            complete, fail = setup(self.sim, parameters, self.mcfolder+str(number), meshtype, num=number, overwrite=overwrite, aniso=self.anisotropy_ratio)
+            nreals += complete
+            nfails += fail
+            
+        return
 
     def Realize(self, number, parallel=False, overwrite=False, meshtype='FracZoneFloodplain'):
         '''
