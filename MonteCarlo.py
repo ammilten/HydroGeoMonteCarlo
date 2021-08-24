@@ -38,19 +38,18 @@ def reformat(sim, params, anisotropy_ratio=False):
         'fpdep':params['fpdep'], #FracZoneFloodplain only
         'fplim':sim['fplim'] #FracZoneFloodplain only
     } 
-    if anisotropy_ratio:
-        por = [params['por_bk'], params['por_fz'], params['por_bk'], params['por_sl'], params['por_fp']]
-        permX = [params['Kh_bk'], params['Kh_fz'], params['Kh_bk'], params['Kh_sl'], params['Kh_fp']]
-        permZ = [params['Kh_bk']*params['Kr_bk'], params['Kh_fz']*params['Kr_fz'], params['Kh_bk']*params['Kr_bk'], params['Kh_sl']*params['Kr_sl'], params['Kh_fp']*params['Kr_fp']]
-        
+    
+    por = [params['por_bk'], params['por_fz'], params['por_bk'], params['por_sl'], params['por_fp'], params['por_ts'], params['por_ss'], params['por_ws'], params['por_bd']]
+    permX = [params['Kh_bk'], params['Kh_fz'], params['Kh_bk'], params['Kh_sl'], params['Kh_fp'], params['Kh_ts'], params['Kh_ss'], params['Kh_ws'], params['Kh_bd']]
+    
+    if anisotropy_ratio:    
+        permZ = [params['Kh_bk']*params['Kr_bk'], params['Kh_fz']*params['Kr_fz'], params['Kh_bk']*params['Kr_bk'], params['Kh_sl']*params['Kr_sl'], params['Kh_fp']*params['Kr_fp'], params['Kh_ts']*params['Kr_ts'], params['Kh_ss']*params['Kr_ss'], params['Kh_ws']*params['Kr_ws'], params['Kh_bd']*params['Kr_bd']]
     else:
-        por = [params['por_bk'], params['por_fz'], params['por_bk'], params['por_sl'], params['por_fp']]
-        permX = [params['Kh_bk'], params['Kh_fz'], params['Kh_bk'], params['Kh_sl'], params['Kh_fp']]
-        permZ = [params['Kv_bk'], params['Kv_fz'], params['Kv_bk'], params['Kv_sl'], params['Kv_fp']]
+        permZ = [params['Kv_bk'], params['Kv_fz'], params['Kv_bk'], params['Kv_sl'], params['Kv_fp'], params['Kv_ts'], params['Kv_ss'], params['Kv_ws'], params['Kv_bd']]
     
         
     props = {
-        'marker': [0, 1, 2, 3, 4],
+        'marker': [0, 1, 2, 3, 4, 5, 6, 7, 8],
         'por': por,
         'permX': permX, 
         'permZ': permZ
