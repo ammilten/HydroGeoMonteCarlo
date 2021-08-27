@@ -11,7 +11,7 @@ import pygimli.physics.ert as ert
 
 import pathlib
 from os import fspath
-DEFAULTPATH = fspath(pathlib.Path(__file__).parent.absolute())
+DEFAULTPATH = fspath(pathlib.Path(__file__).parent.parent.absolute())
 
 # ----------Create Topo Polygon ----------------------
 def createBackground(efile, xextra, botdep):
@@ -57,7 +57,7 @@ class UniformMesh:
         self.zthx = zthx
         self.layerz = -1 * np.array(deplist)
         if efile is None:
-            self.efile = DEFAULTPATH+"/data/PH-2018-eloc.txt"
+            self.efile = DEFAULTPATH+"/data/topo.csv"
         else:
             self.efile = efile
 

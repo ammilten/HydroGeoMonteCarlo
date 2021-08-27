@@ -36,7 +36,8 @@ def reformat(sim, params, anisotropy_ratio=False):
         'dep':sim['dep'],
         'shdep':params['shdep'], #ShallowLayerFZ only
         'fpdep':params['fpdep'], #FracZoneFloodplain only
-        'fplim':sim['fplim'] #FracZoneFloodplain only
+        'fplim':sim['fplim'], #FracZoneFloodplain only
+        'layerthx':[params['thx_ts'], params['thx_ss'], params['thx_ws']] #FourLayer only
     } 
     
     por = [params['por_bk'], params['por_fz'], params['por_bk'], params['por_sl'], params['por_fp'], params['por_ts'], params['por_ss'], params['por_ws'], params['por_bd']]
@@ -70,7 +71,7 @@ def check_for_results(folder, exists):
     #sys.exit('Error: check_for_results has not been finished')
     return exists
 
-def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True):
+def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True, pflotran_path='/home/ammilten/pflotran/src/pflotran/pflotran'):
     complete = False
     failed = False
 
@@ -83,7 +84,7 @@ def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True):
         print('Simulating ' + folder2)
         try:
             real = Realization(meshtype, params2, props, sim2, folder=folder2)
-            real.realize()
+            real.realize(pflotran_path=pflotran_path)
             complete = True
         except:
             failed = True
@@ -183,10 +184,11 @@ def save_simulation_setup(sim, params, fname):
         pkl.dump(params, f)
 
 class MonteCarlo:
-    def __init__(self, mcfolder, sim=None, params=None, from_file=None, anisotropy_ratio=True, overwrite=False):
+    def __init__(self, mcfolder, sim=None, params=None, from_file=None, anisotropy_ratio=True, overwrite=False, pflotran_path='/home/ammilten/pflotran/src/pflotran/pflotran'):
         '''
         This constructor does...
         '''
+        self.pflotran_path = pflotran_path
         
         self.mcfolder, exists = make_directory(mcfolder, show_warning=True)
         if exists and not overwrite:
@@ -243,12 +245,12 @@ class MonteCarlo:
         if number is 'all':
             for i in range(len(self.tbl)):
                 parameters = self.tbl.loc[i,:].to_dict()
-                complete, fail = run(self.sim, parameters, self.mcfolder+str(i), meshtype, num=i, overwrite=overwrite, aniso=self.anisotropy_ratio)
+                complete, fail = run(self.sim, parameters, self.mcfolder+str(i), meshtype, num=i, overwrite=overwrite, aniso=self.anisotropy_ratio, pflotran_path=self.pflotran_path)
                 nreals += complete
                 nfails += fail
         else:
             parameters = self.tbl.loc[number,:].to_dict()
-            complete, fail = run(self.sim, parameters, self.mcfolder+str(number), meshtype, num=number, overwrite=overwrite, aniso=self.anisotropy_ratio)
+            complete, fail = run(self.sim, parameters, self.mcfolder+str(number), meshtype, num=number, overwrite=overwrite, aniso=self.anisotropy_ratio, pflotran_path=self.pflotran_path)
             nreals += complete
             nfails += fail
             

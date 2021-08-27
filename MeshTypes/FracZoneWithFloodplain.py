@@ -13,7 +13,7 @@ import sys
 import time
 import pathlib
 from os import fspath
-DEFAULTPATH = fspath(pathlib.Path(__file__).parent.absolute())
+DEFAULTPATH = fspath(pathlib.Path(__file__).parent.parent.absolute())
 
 # ----------Create Topo Polygon ----------------------
 def createBackground(efile, xextra, botdep, shdep=0):
@@ -151,7 +151,7 @@ class FPFZMesh:
         self.area = area
         self.zthx = zthx
         if efile is None:
-            self.efile = DEFAULTPATH+"/data/PH-2018-eloc.txt"
+            self.efile = DEFAULTPATH+"/data/topo.csv"
         else:
             self.efile = efile
 

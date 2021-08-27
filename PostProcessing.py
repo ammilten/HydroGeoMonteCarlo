@@ -244,24 +244,15 @@ def load_wtds(mcfolder, N='all', tshift=1460):
     WTD = WTD[:,np.where(conditions)[0]]
     
     return WTD, interp_days, inds
-    
+       
 def WLPCA(mcfolder, N, tshift=1460):
     '''
     Fetches data in mcfolder and returns a PCA object
     '''
 
-    PLM1, PLM6, tetsu = load_well_data()
     WTD, days, inds = load_wtds(mcfolder, N=N, tshift=tshift)
+    WTD_tetsu = project_field_wtd(days)
 
-
-    PLM1_tetsu = PLM6['Elevation'] - tetsu['PLM6 Piezometer WTE']
-    PLM6_tetsu = PLM6['Elevation'] - tetsu['PLM6 Piezometer WTE']
-    PLM1_interp = np.interp(days, tetsu['day'], PLM1_tetsu)
-    PLM6_interp = np.interp(days, tetsu['day'], PLM6_tetsu) 
-    WTD_tetsu = np.concatenate((PLM1_interp, PLM6_interp),axis=0)
-    WTD_tetsu = WTD_tetsu[:,np.newaxis].T
-    
-    
     pca = PCA()
     pca.fit(WTD)
     scores = pca.transform(WTD)
@@ -269,6 +260,15 @@ def WLPCA(mcfolder, N, tshift=1460):
     
     return pca, scores, scores_tetsu, inds
 
-
+def project_field_wtd(days):
+    PLM1, PLM6, tetsu = load_well_data()
+    PLM1_tetsu = PLM6['Elevation'] - tetsu['PLM6 Piezometer WTE']
+    PLM6_tetsu = PLM6['Elevation'] - tetsu['PLM6 Piezometer WTE']
+    PLM1_interp = np.interp(days, tetsu['day'], PLM1_tetsu)
+    PLM6_interp = np.interp(days, tetsu['day'], PLM6_tetsu) 
+    WTD_tetsu = np.concatenate((PLM1_interp, PLM6_interp),axis=0)
+    WTD_tetsu = WTD_tetsu[:,np.newaxis].T
+    return WTD_tetsu
+    
     
 

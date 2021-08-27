@@ -12,7 +12,7 @@ import pygimli.physics.ert as ert
 import time
 import pathlib
 from os import fspath
-DEFAULTPATH = fspath(pathlib.Path(__file__).parent.absolute())
+DEFAULTPATH = fspath(pathlib.Path(__file__).parent.parent.absolute())
 
 # ----------Create Topo Polygon ----------------------
 def createBackground(efile, xextra, botdep, shdep):
@@ -81,6 +81,29 @@ def createLayer(bot_topo, xextra, thx, marker):
     topo2[:,1] = topo2[:,1]+thx
 
     return topo2, lpoly
+    
+def createTopLayer(bot_topo, srffile, xextra, thx, marker):
+
+    elev_bot = np.floor(np.min(bot_topo[:,1]))
+    xL = np.floor(np.min(bot_topo[:,0]))
+    xR = np.ceil(np.max(bot_topo[:,0]))
+
+    L_ext = np.array([[xL-xextra, bot_topo[0,1]]])
+    R_ext = np.array([[xR+xextra, bot_topo[bot_topo.shape[0]-1,1]]])
+    topo_ext = np.flipud(np.concatenate((L_ext, bot_topo, R_ext)))
+
+    srftopo = np.genfromtxt(srffile ,delimiter=',',skip_header=True)
+    L_ext = np.array([[xL-xextra, srftopo[0,1]]])
+    R_ext = np.array([[xR+xextra, srftopo[srftopo.shape[0]-1,1]]])
+    srf_ext = np.concatenate((L_ext, srftopo, R_ext))
+
+    combo = np.concatenate((topo_ext, srf_ext))
+
+    markerpos = [srftopo[0,0], srftopo[0,1]-thx/2]
+    lpoly = mt.createPolygon(combo, isClosed=True, marker=marker, markerPosition=markerpos)
+
+    return srftopo, lpoly
+
 
 # ---------- Create mesh ---------------------
 def createMesh(geom, topo, Q, area=None):
@@ -104,17 +127,18 @@ class FourLayerMesh:
         self.xtra = xtra
         self.area = area
         self.zthx = zthx
+        self.srffile = DEFAULTPATH+"/data/topo_refined.csv"
         if efile is None:
-            self.efile = DEFAULTPATH+"/data/PH-2018-eloc.txt"
+            self.efile = DEFAULTPATH+"/data/topo.csv"
         else:
             self.efile = efile
-
             
+
 #        print('Creating Background')
-        topo, bedrock = createBackground(self.efile, self.xtra, self.dep, sum(self.layerthx))          
+        topo, bedrock = createBackground(self.efile, self.xtra, self.dep, sum(self.layerthx))        
         topo, weathered = createLayer(topo, self.xtra, self.layerthx[2], 7)
         topo, subsoil = createLayer(topo, self.xtra, self.layerthx[1], 6)      
-        self.topo, topsoil = createLayer(topo, self.xtra, self.layerthx[0], 5)
+        self.topo, topsoil = createTopLayer(topo, self.srffile, self.xtra, self.layerthx[0], 5)
 
         self.geom = bedrock+weathered+subsoil+topsoil
         
