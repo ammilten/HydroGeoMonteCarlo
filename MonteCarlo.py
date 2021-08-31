@@ -282,8 +282,8 @@ class MonteCarlo:
         This method does...
         '''
         PARAMS = create_parameter_list(self.tbl, self.sim, self.params, self.mcfolder, meshtype, overwrite=overwrite, aniso=self.anisotropy_ratio, pflotran_path=self.pflotran_path)
-#        nreals = 0
-#        nfails = 0
+        nreals = 0
+        nfails = 0
         st = time.time()
         if number is 'all':
             if parallel:
@@ -298,7 +298,7 @@ class MonteCarlo:
                 for i in range(len(self.tbl)):
                     complete, fail = runwrapper(PARAMS[i])
                     nreals += complete 
-                    nfails += complete
+                    nfails += fail
                 
             
 #            for i in range(len(self.tbl)):
