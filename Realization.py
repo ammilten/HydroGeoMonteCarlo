@@ -50,8 +50,8 @@ class Realization:
         return Realization(meshtype, params, props, sim, folder=folder)
         
         
-    def realize(self, pflotran_path='/home/ammilten/pflotran/src/pflotran/pflotran'):
-        cmd = "mpirun -n 1 " + pflotran_path + " -pflotranin " + self.Simulation.file
+    def realize(self, pflotran_path='/home/ammilten/pflotran/src/pflotran/pflotran', nproc=1):
+        cmd = "mpirun -n " + str(nproc) + " " + pflotran_path + " -pflotranin " + self.Simulation.file
         os.system(cmd)
         return
 

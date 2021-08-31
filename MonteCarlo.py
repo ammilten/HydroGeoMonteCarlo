@@ -108,7 +108,7 @@ def check_for_results(folder, exists):
     #sys.exit('Error: check_for_results has not been finished')
     return exists
 
-def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True, pflotran_path='/home/ammilten/pflotran/src/pflotran/pflotran'):
+def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True, pflotran_path='/home/ammilten/pflotran/src/pflotran/pflotran', nproc=1):
     complete = False
     failed = False
 
@@ -121,7 +121,7 @@ def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True, pf
         print('Simulating ' + folder2)
         try:
             real = Realization(meshtype, params2, props, sim2, folder=folder2)
-            real.realize(pflotran_path=pflotran_path)
+            real.realize(pflotran_path=pflotran_path, nproc=nproc)
             complete = True
         except:
             failed = True
@@ -132,7 +132,7 @@ def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True, pf
             print('  preparing '+folder2)
             real = Realization(meshtype, params2, props, sim2, folder=folder2)
             print('  realizing '+folder2)
-            real.realize(pflotran_path=pflotran_path)
+            real.realize(pflotran_path=pflotran_path, nproc=nproc)
             print('  completed '+folder2)
             complete = True
         except:
@@ -280,7 +280,7 @@ class MonteCarlo:
             
         return
 
-    def Realize(self, number, overwrite=False, meshtype='FracZoneFloodplain', parallel=False, nproc=None):
+    def Realize(self, number, overwrite=False, meshtype='FracZoneFloodplain', parallel=False, nproc=1):
         '''
         This method does...
         '''
@@ -310,9 +310,9 @@ class MonteCarlo:
 #                nreals += complete
 #                nfails += fail
         else:
-            complete, fail = runwrapper(PARAMS[number])
-#            parameters = self.tbl.loc[number,:].to_dict()
-#            complete, fail = run(self.sim, parameters, self.mcfolder+str(number), meshtype, num=number, overwrite=overwrite, aniso=self.anisotropy_ratio, pflotran_path=self.pflotran_path)
+#            complete, fail = runwrapper(PARAMS[number])
+            parameters = self.tbl.loc[number,:].to_dict()
+            complete, fail = run(self.sim, parameters, self.mcfolder+str(number), meshtype, num=number, overwrite=overwrite, aniso=self.anisotropy_ratio, pflotran_path=self.pflotran_path, nproc=nproc)
             nreals += complete
             nfails += fail
             

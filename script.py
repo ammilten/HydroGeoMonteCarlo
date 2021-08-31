@@ -65,5 +65,5 @@ ex = MC.MonteCarlo(mcfolder, overwrite=True, pflotran_path=pflotran_path) #initi
 ex.sim = simulation #set MonteCarlo simulation parameters
 ex.params = parameters #set MonteCarlo uncertain parameters
 ex.SampleParameters(N=6) #sample some parameters
-ex.Realize('all', overwrite=True, meshtype=meshtype, parallel=True, nproc=3) #realize all parameters, with option to overwrite
+ex.Realize('all', overwrite=True, meshtype=meshtype, parallel=False, nproc=1) #realize all parameters, with option to overwrite
 
