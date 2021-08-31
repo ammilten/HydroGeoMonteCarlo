@@ -61,10 +61,11 @@ class UniformMesh:
         else:
             self.efile = efile
 
-            
+        print('   creating background')  
         self.topo, bpoly = createBackground(self.efile, self.xtra, self.dep)        
         self.geom = bpoly
         
+        print('   meshing')
         self.mesh = createMesh(self.geom, self.topo, self.layerz, self.Q, area=self.area)
         self.mesh3D = pg.meshtools.extrudeMesh(self.mesh, a=np.array([0,zthx]))
         
