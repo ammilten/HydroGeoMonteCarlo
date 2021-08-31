@@ -299,7 +299,9 @@ class MonteCarlo:
                 nfails = 'n/a'
             else:
                 for i in range(len(self.tbl)):
-                    complete, fail = runwrapper(PARAMS[i])
+                    parameters = self.tbl.loc[i,:].to_dict()
+                    complete, fail = run(self.sim, parameters, self.mcfolder+str(number), meshtype, num=number, overwrite=overwrite, aniso=self.anisotropy_ratio, pflotran_path=self.pflotran_path, nproc=nproc)
+#                    complete, fail = runwrapper(PARAMS[i])
                     nreals += complete 
                     nfails += fail
                 
