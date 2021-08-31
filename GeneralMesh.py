@@ -112,6 +112,7 @@ class Mesh:
                 layerthx = params['layerthx'],
                 dep = params['dep'])
         else:
+            print('ERROR: Incorrect meshtype.')
             sys.exit('ERROR: Incorrect meshtype. Options are -FracZone- -ShallowLayerFZ-')
            
         self.mesh = M.mesh3D
