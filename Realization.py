@@ -52,6 +52,7 @@ class Realization:
         
     def realize(self, pflotran_path='/home/ammilten/pflotran/src/pflotran/pflotran', nproc=1):
         cmd = "mpirun -n " + str(nproc) + " " + pflotran_path + " -pflotranin " + self.Simulation.file
+        print(cmd)
         os.system(cmd)
         return
 
