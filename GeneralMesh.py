@@ -56,6 +56,8 @@ class Mesh:
         self.meshtype = meshtype
         self.params = params
         
+        print('   mesh is of type '+meshtype)
+        
         if meshtype is 'FracZone':
             M = FracZoneMesh.FZMesh(
                 efile = params['efile'],
@@ -110,7 +112,7 @@ class Mesh:
                 dep = params['dep'])
         else:
             sys.exit('ERROR: Incorrect meshtype. Options are -FracZone- -ShallowLayerFZ-')
-                
+           
         self.mesh = M.mesh3D
         self.mesh2d = M.mesh
         self.topo = M.topo
