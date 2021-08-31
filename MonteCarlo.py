@@ -134,8 +134,7 @@ def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True, pf
             complete = True
         except e:
             failed = True
-            print('    Failed: ' + folder2)
-            print(e)
+            print('    Failed: ' + folder2, sys.exc_info()[0])
             
     elif exists and not overwrite:
         print('Skipping realization '+str(num)+' (already exists).')
