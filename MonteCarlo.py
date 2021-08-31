@@ -14,6 +14,8 @@ import numpy as np
 import pandas as pd
 import scipy.stats as st
 
+from multiprocessing import Pool
+
 from pathlib import Path
 import warnings
 
@@ -66,6 +68,41 @@ def reformat(sim, params, anisotropy_ratio=False):
     } 
     return params2, props, sim2
     
+def create_parameter_list(tbl, sim, parameters, mcfolder, meshtype, overwrite, aniso, pflotran_path):
+    '''
+    Takes these inputs and turns them into a list of tuples for each realizations
+    
+    Inputs
+      tbl 			table of parameters (pandas DataFrame)
+      sim			dict of simulation (constant) parameters
+      parameters		dict of realization (variable) parameters
+      folder			string of realization folder
+      meshtype			string of mesh type
+      num			integer of realization
+      overwrite		bool of whether to overwrite existing or not
+      aniso			bool of whether to use anisotropy ratio or not
+      pflotran_path		string of path to pflotran executable
+      
+    Outputs
+      PARAMS			list of tuples with the following structure
+        [0] sim 		dict of simulation (constant) parameters
+        [1] params		dict of realization (variable) parameters
+        [2] folder		realization folder
+        [3] meshtype		string of meshtype
+        [4] overwrite		bool to overwrite existing realizations
+        [5] num		integer of realization
+        [6] aniso		bool of whether to use anistropy ratio or not
+        [7] pflotran_path	path to pflotran executable
+    ''' 
+    
+    PARAMS = [None] * len(tbl)
+    for i in range(len(tbl)):
+        p2 = tbl.loc[i,:].to_dict()    
+        folder = mcfolder + str(i)
+        real = (sim, p2, folder, meshtype, overwrite, i, aniso, pflotran_path)
+        PARAMS[i] = real
+    return PARAMS
+    
 def check_for_results(folder, exists):
     
     #sys.exit('Error: check_for_results has not been finished')
@@ -105,6 +142,9 @@ def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True, pf
         sys.exit('Overwrite status encountered an error.')
         
     return complete, failed
+    
+def runwrapper(real):
+    return run(real[0], real[1], real[2], real[3], overwrite=real[4], num=real[5], aniso=real[6], pflotran_path=real[7])
     
 def setup(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True):
     complete = False
@@ -184,11 +224,13 @@ def save_simulation_setup(sim, params, fname):
         pkl.dump(params, f)
 
 class MonteCarlo:
-    def __init__(self, mcfolder, sim=None, params=None, from_file=None, anisotropy_ratio=True, overwrite=False, pflotran_path='/home/ammilten/pflotran/src/pflotran/pflotran'):
+    def __init__(self, mcfolder, sim=None, params=None, from_file=None, anisotropy_ratio=True, overwrite=False, pflotran_path='/home/ammilten/pflotran/src/pflotran/pflotran', parallel=False, nproc=None):
         '''
         This constructor does...
         '''
         self.pflotran_path = pflotran_path
+        self.parallel = parallel
+        self.nproc = nproc
         
         self.mcfolder, exists = make_directory(mcfolder, show_warning=True)
         if exists and not overwrite:
@@ -239,18 +281,35 @@ class MonteCarlo:
         '''
         This method does...
         '''
-        nreals = 0
-        nfails = 0
+        PARAMS = create_parameter_list(self.tbl, self.sim, self.params, self.mcfolder, meshtype, overwrite=overwrite, aniso=self.anisotropy_ratio, pflotran_path=self.pflotran_path)
+#        nreals = 0
+#        nfails = 0
         st = time.time()
         if number is 'all':
-            for i in range(len(self.tbl)):
-                parameters = self.tbl.loc[i,:].to_dict()
-                complete, fail = run(self.sim, parameters, self.mcfolder+str(i), meshtype, num=i, overwrite=overwrite, aniso=self.anisotropy_ratio, pflotran_path=self.pflotran_path)
-                nreals += complete
-                nfails += fail
+            if self.parallel:
+                if self.nproc is None:
+                    pool = Pool()
+                else:
+                    pool = Pool(processes=self.nproc)
+                pool.map(runwrapper, PARAMS)
+                nreals = 'n/a'
+                nfails = 'n/a'
+            else:
+                for i in range(len(self.tbl)):
+                    complete, fail = runwrapper(PARAMS[i])
+                    nreals += complete 
+                    nfails += complete
+                
+            
+#            for i in range(len(self.tbl)):
+#                parameters = self.tbl.loc[i,:].to_dict()
+#                complete, fail = run(self.sim, parameters, self.mcfolder+str(i), meshtype, num=i, overwrite=overwrite, aniso=self.anisotropy_ratio, pflotran_path=self.pflotran_path)
+#                nreals += complete
+#                nfails += fail
         else:
-            parameters = self.tbl.loc[number,:].to_dict()
-            complete, fail = run(self.sim, parameters, self.mcfolder+str(number), meshtype, num=number, overwrite=overwrite, aniso=self.anisotropy_ratio, pflotran_path=self.pflotran_path)
+            complete, fail = runwrapper(PARAMS[number])
+#            parameters = self.tbl.loc[number,:].to_dict()
+#            complete, fail = run(self.sim, parameters, self.mcfolder+str(number), meshtype, num=number, overwrite=overwrite, aniso=self.anisotropy_ratio, pflotran_path=self.pflotran_path)
             nreals += complete
             nfails += fail
             
