@@ -95,6 +95,7 @@ class Mesh:
                 fpdep = params['fpdep'],
                 fplim = params['fplim'])
         elif meshtype is 'Uniform':
+            print('   mesh is confirmed Uniform')
             M = Uniform.UniformMesh(
                 efile = params['efile'],
                 xtra = params['xtra'],
