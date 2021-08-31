@@ -56,8 +56,6 @@ class Mesh:
         self.meshtype = meshtype
         self.params = params
         
-        print('   mesh is of type '+meshtype)
-        
         if meshtype == 'FracZone':
             M = FracZoneMesh.FZMesh(
                 efile = params['efile'],
@@ -93,7 +91,6 @@ class Mesh:
                 fpdep = params['fpdep'],
                 fplim = params['fplim'])
         elif meshtype == 'Uniform':
-            print('   mesh is confirmed Uniform')
             M = Uniform.UniformMesh(
                 efile = params['efile'],
                 xtra = params['xtra'],
