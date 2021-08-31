@@ -130,11 +130,11 @@ def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True, pf
         print('Overwriting realization '+str(num)+'.')
         try:
             real = Realization(meshtype, params2, props, sim2, folder=folder2)
-            real.realize()
+            real.realize(pflotran_path=pflotran_path)
             complete = True
         except:
             failed = True
-            print('    Failed: ' + folder2, sys.exc_info()[0])
+            print('    Failed: ' + folder2)
             
     elif exists and not overwrite:
         print('Skipping realization '+str(num)+' (already exists).')
