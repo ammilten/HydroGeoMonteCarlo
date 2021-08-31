@@ -9,9 +9,13 @@ class Realization:
     def __init__(self, meshtype, meshparams, props, simparams, folder=None):
 
         self.folder = folder
+        print('  meshing '+folder)
         self.Mesh = Mesh(meshtype, meshparams, folder=folder)
+        print('  assigning properties to '+folder)
         self.Properties = Properties(self.Mesh, props, folder=folder)
+        print('  defining regions for '+folder)
         self.Regions = Regions(self.Mesh, folder=folder)
+        print('  preparing simulation files for '+folder)
         self.Simulation = Simulation(simparams, folder=folder)
         
     @classmethod
