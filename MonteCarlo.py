@@ -129,8 +129,11 @@ def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True, pf
     elif exists and overwrite:
         print('Overwriting realization '+str(num)+'.')
         try:
+            print('  preparing '+folder2)
             real = Realization(meshtype, params2, props, sim2, folder=folder2)
+            print('  realizing '+folder2)
             real.realize(pflotran_path=pflotran_path)
+            print('  completed '+folder2)
             complete = True
         except:
             failed = True
