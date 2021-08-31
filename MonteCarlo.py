@@ -144,6 +144,7 @@ def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True, pf
     return complete, failed
     
 def runwrapper(real):
+    print(real)
     return run(real[0], real[1], real[2], real[3], overwrite=real[4], num=real[5], aniso=real[6], pflotran_path=real[7])
     
 def setup(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True):
