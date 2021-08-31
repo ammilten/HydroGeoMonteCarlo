@@ -58,7 +58,7 @@ class Mesh:
         
         print('   mesh is of type '+meshtype)
         
-        if meshtype is 'FracZone':
+        if meshtype == 'FracZone':
             M = FracZoneMesh.FZMesh(
                 efile = params['efile'],
                 dip = params['dip'],
@@ -69,7 +69,7 @@ class Mesh:
                 deplist = params['deplist'],
                 Q = params['Q'],
                 dep = params['dep'])            
-        elif meshtype is 'ShallowLayerFZ':
+        elif meshtype == 'ShallowLayerFZ':
             M = ShallowLayerFZMesh.SLFZMesh(
                 efile = params['efile'],
                 dip = params['dip'],
@@ -80,7 +80,7 @@ class Mesh:
                 Q = params['Q'],
                 dep = params['dep'],
                 shdep = params['shdep'])
-        elif meshtype is 'FracZoneFloodplain':
+        elif meshtype == 'FracZoneFloodplain':
             M = FracZoneWithFloodplain.FPFZMesh(
                 efile = params['efile'],
                 dip = params['dip'],
@@ -92,7 +92,7 @@ class Mesh:
                 dep = params['dep'],
                 fpdep = params['fpdep'],
                 fplim = params['fplim'])
-        elif meshtype is 'Uniform':
+        elif meshtype == 'Uniform':
             print('   mesh is confirmed Uniform')
             M = Uniform.UniformMesh(
                 efile = params['efile'],
@@ -101,7 +101,7 @@ class Mesh:
                 Q = params['Q'],
                 deplist = params['deplist'],
                 dep = params['dep'])
-        elif meshtype is 'FourLayers':
+        elif meshtype == 'FourLayers':
             M = FourLayers.FourLayerMesh(
                 efile = params['efile'],
                 xtra = params['xtra'],
@@ -109,11 +109,9 @@ class Mesh:
                 Q = params['Q'],
                 layerthx = params['layerthx'],
                 dep = params['dep'])
-        elif meshtype == 'Uniform':
-            print('USE ==')
         else:
             print('ERROR: Incorrect meshtype ('+meshtype+')')
-            sys.exit('ERROR: Incorrect meshtype. Options are -FracZone- -ShallowLayerFZ-')
+            sys.exit('ERROR: Incorrect meshtype. Options are -FracZone- -ShallowLayerFZ- -Uniform- -FourLayers- -FracZoneFloodplain-')
            
         self.mesh = M.mesh3D
         self.mesh2d = M.mesh
