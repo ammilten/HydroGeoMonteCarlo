@@ -277,7 +277,7 @@ class MonteCarlo:
             
         return
 
-    def Realize(self, number, parallel=False, overwrite=False, meshtype='FracZoneFloodplain'):
+    def Realize(self, number, overwrite=False, meshtype='FracZoneFloodplain', parallel=False, nproc=None):
         '''
         This method does...
         '''
@@ -286,11 +286,11 @@ class MonteCarlo:
 #        nfails = 0
         st = time.time()
         if number is 'all':
-            if self.parallel:
-                if self.nproc is None:
+            if parallel:
+                if nproc is None:
                     pool = Pool()
                 else:
-                    pool = Pool(processes=self.nproc)
+                    pool = Pool(processes=nproc)
                 pool.map(runwrapper, PARAMS)
                 nreals = 'n/a'
                 nfails = 'n/a'
@@ -322,4 +322,4 @@ class MonteCarlo:
         return
             
             
-            
+             n
