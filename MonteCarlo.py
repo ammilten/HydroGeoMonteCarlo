@@ -132,7 +132,7 @@ def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True, pf
             real = Realization(meshtype, params2, props, sim2, folder=folder2)
             real.realize()
             complete = True
-        except e:
+        except:
             failed = True
             print('    Failed: ' + folder2, sys.exc_info()[0])
             
