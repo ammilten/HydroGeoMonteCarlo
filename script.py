@@ -3,7 +3,7 @@ import scipy.stats as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-meshtype = 'Uniform'
+meshtype = 'FourLayers'
 mcfolder = 'data/test'
 pflotran_path = '/home/ammilten/pflotran/src/pflotran/pflotran'
 
