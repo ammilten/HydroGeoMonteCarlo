@@ -68,8 +68,7 @@ class Mesh:
                 area = params['area'],
                 deplist = params['deplist'],
                 Q = params['Q'],
-                dep = params['dep'])
-                
+                dep = params['dep'])            
         elif meshtype is 'ShallowLayerFZ':
             M = ShallowLayerFZMesh.SLFZMesh(
                 efile = params['efile'],
@@ -81,7 +80,6 @@ class Mesh:
                 Q = params['Q'],
                 dep = params['dep'],
                 shdep = params['shdep'])
-                
         elif meshtype is 'FracZoneFloodplain':
             M = FracZoneWithFloodplain.FPFZMesh(
                 efile = params['efile'],
@@ -111,6 +109,8 @@ class Mesh:
                 Q = params['Q'],
                 layerthx = params['layerthx'],
                 dep = params['dep'])
+        elif meshtype == 'Uniform':
+            print('USE ==')
         else:
             print('ERROR: Incorrect meshtype ('+meshtype+')')
             sys.exit('ERROR: Incorrect meshtype. Options are -FracZone- -ShallowLayerFZ-')
