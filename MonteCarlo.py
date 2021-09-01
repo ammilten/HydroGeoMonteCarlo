@@ -103,11 +103,38 @@ def create_parameter_list(tbl, sim, parameters, mcfolder, meshtype, overwrite, a
         real = (sim, p2, folder, meshtype, overwrite, i, aniso, pflotran_path)
         PARAMS[i] = real
     return PARAMS
+  
+def find_unfinished_realizations(mcfolder):
+    '''
+    Goes through all realization in the mcfolder and finds which ones have 'simulation.out'
+    Returns a boolean list of length (# of realizations) that is True if it contains 'simulation.out' and False if it does not
+    ''' 
+    folders = sorted(os.listdir(mcfolder))
+    nf = 0
+    for f in folders:
+        nf += os.path.isdir(mcfolder+f)
     
-def check_for_results(folder, exists):
+    incomplete = [None] * nf
+    i = 0
+    for f in folders:
+        if os.path.isdir(mcfolder+f):
+            incomplete[i] = not check_for_results(mcfolder+f)
+            i += 1
+            
+    nums = [int(folders[i]) for i in range(nf) if incomplete[i] is True]
+    return incomplete, nums
+    
+def check_for_results(folder):
+    '''
+    Checks one realization to see if it contains a file named 'simulation.out'
+    '''
+    
+    # get files in folder
+    
+    # find if 
     
     #sys.exit('Error: check_for_results has not been finished')
-    return exists
+    return os.path.exists(folder+'/simulation.out')
 
 def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True, pflotran_path='/home/ammilten/pflotran/src/pflotran/pflotran', nproc=1):
     complete = False
@@ -183,10 +210,12 @@ def setup(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True):
     return complete, failed
     
 def prepare_cmds(nproc, pflotran_path, folder, number):
-    cmds = [None] * number
-    for i in range(number):
-        infile = folder + str(i) + '/simulation.in'
+    cmds = [None] * len(number)
+    i = 0
+    for real in number:
+        infile = folder + str(real) + '/simulation.in'
         cmds[i] = "mpirun -n " + str(nproc) + " " + pflotran_path + " -pflotranin " + infile
+        i += 1
     return cmds
     
 def run_cmdline(cmd):
@@ -306,8 +335,24 @@ class MonteCarlo:
             else:
                 for i in range(len(self.tbl)):
                     run_cmdline(cmds[i])
+        elif number is 'incomplete':
+            incompl, nums = find_unfinished_realizations(self.mcfolder)
+            #inds = [nums[i] for i in range(len(incompl)) if incompl[i] is True]
+            print(incompl)
+            print(nums)
+            cmds = prepare_cmds(1, pflotran_path, self.mcfolder, nums)
+            if parallel:
+                if nproc is None:
+                    pool = Pool()
+                else:
+                    pool = Pool(processes=nproc)
+                #pool.map(run_cmdline, cmds)
+            else:
+                print(cmds)
+                for i in range(len(self.tbl)):
+                    run_cmdline(cmds[i])
         else:
-            print('Only \'all\' option is implemented')
+            print('Only \'all\' and \'incomplete\' options are implemented')
         return
         
     def SetupAndRealize(self, number, overwrite=False, meshtype='FracZoneFloodplain', parallel=False, nproc=1):
