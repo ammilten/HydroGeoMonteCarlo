@@ -3,7 +3,7 @@ from Properties import Properties
 from Regions import Regions
 from Simulation import Simulation
 
-import os
+import os  
 
 class Realization:
     def __init__(self, meshtype, meshparams, props, simparams, folder=None):

@@ -24,6 +24,7 @@ from Realization import Realization
 import pickle as pkl
 import sys
 import time
+import os
 
 def reformat(sim, params, anisotropy_ratio=False):
     params2 = {
@@ -129,11 +130,11 @@ def run(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True, pf
     elif exists and overwrite:
         print('Overwriting realization '+str(num)+'.')
         try:
-            print('  preparing '+folder2)
+#            print('  preparing '+folder2)
             real = Realization(meshtype, params2, props, sim2, folder=folder2)
-            print('  realizing '+folder2)
+#            print('  realizing '+folder2)
             real.realize(pflotran_path=pflotran_path, nproc=nproc)
-            print('  completed '+folder2)
+#            print('  completed '+folder2)
             complete = True
         except:
             failed = True
@@ -180,7 +181,19 @@ def setup(sim, params, folder, meshtype, overwrite=False, num=None, aniso=True):
         sys.exit('Overwrite status encountered an error.')
         
     return complete, failed
-
+    
+def prepare_cmds(nproc, pflotran_path, folder, number):
+    cmds = [None] * number
+    for i in range(number):
+        infile = folder + str(i) + '/simulation.in'
+        cmds[i] = "mpirun -n " + str(nproc) + " " + pflotran_path + " -pflotranin " + infile
+    return cmds
+    
+def run_cmdline(cmd):
+    print(cmd)
+    os.system(cmd)
+    return
+    
 def make_directory(mcfolder, show_warning=False):
     exists = False
     if not mcfolder.endswith('/'):
@@ -279,8 +292,25 @@ class MonteCarlo:
             nfails += fail
             
         return
-
-    def Realize(self, number, overwrite=False, meshtype='FracZoneFloodplain', parallel=False, nproc=1):
+        
+    def Realize(self, number, pflotran_path='/home/ammilten/pflotran/src/pflotran/pflotran', parallel=False, nproc=1):
+        
+        if number is 'all':
+            cmds = prepare_cmds(1, pflotran_path, self.mcfolder, len(self.tbl))
+            if parallel:
+                if nproc is None:
+                    pool = Pool()
+                else:
+                    pool = Pool(processes=nproc)
+                pool.map(run_cmdline, cmds)
+            else:
+                for i in range(len(self.tbl)):
+                    run_cmdline(cmds[i])
+        else:
+            print('Only \'all\' option is implemented')
+        return
+        
+    def SetupAndRealize(self, number, overwrite=False, meshtype='FracZoneFloodplain', parallel=False, nproc=1):
         '''
         This method does...
         '''
@@ -300,7 +330,7 @@ class MonteCarlo:
             else:
                 for i in range(len(self.tbl)):
                     parameters = self.tbl.loc[i,:].to_dict()
-                    complete, fail = run(self.sim, parameters, self.mcfolder+str(number), meshtype, num=number, overwrite=overwrite, aniso=self.anisotropy_ratio, pflotran_path=self.pflotran_path, nproc=nproc)
+                    complete, fail = run(self.sim, parameters, self.mcfolder+str(i), meshtype, num=i, overwrite=overwrite, aniso=self.anisotropy_ratio, pflotran_path=self.pflotran_path, nproc=nproc)
 #                    complete, fail = runwrapper(PARAMS[i])
                     nreals += complete 
                     nfails += fail
