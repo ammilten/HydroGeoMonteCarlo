@@ -337,16 +337,13 @@ class MonteCarlo:
                     run_cmdline(cmds[i])
         elif number is 'incomplete':
             incompl, nums = find_unfinished_realizations(self.mcfolder)
-            #inds = [nums[i] for i in range(len(incompl)) if incompl[i] is True]
-            print(incompl)
-            print(nums)
             cmds = prepare_cmds(1, pflotran_path, self.mcfolder, nums)
             if parallel:
                 if nproc is None:
                     pool = Pool()
                 else:
                     pool = Pool(processes=nproc)
-                #pool.map(run_cmdline, cmds)
+                pool.map(run_cmdline, cmds)
             else:
                 print(cmds)
                 for i in range(len(self.tbl)):
