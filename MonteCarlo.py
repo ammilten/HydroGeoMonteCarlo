@@ -325,7 +325,7 @@ class MonteCarlo:
     def Realize(self, number, pflotran_path='/home/ammilten/pflotran/src/pflotran/pflotran', parallel=False, nproc=1):
         
         if number is 'all':
-            cmds = prepare_cmds(1, pflotran_path, self.mcfolder, len(self.tbl))
+            cmds = prepare_cmds(1, pflotran_path, self.mcfolder, range(len(self.tbl)))
             if parallel:
                 if nproc is None:
                     pool = Pool()
