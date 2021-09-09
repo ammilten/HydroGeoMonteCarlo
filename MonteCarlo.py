@@ -65,6 +65,7 @@ def reformat(sim, params, anisotropy_ratio=False):
         'M': '{:.2f}d0'.format(params['m']), #Van Genuchten
         'LIQUID_RESIDUAL_SATURATION': '{:.2f}d0'.format(params['satresid']), #Brooks-Corey
         'MAX_RECHARGE': '{:f}d0'.format(params['max_recharge']), #m/day
+        'MAX_ET':'{:f}d0'.format(params['max_et_pct']*params['max_recharge']), #m/day
         'PRESSURE_RIVER': '{:.2f}d0'.format(sim['riv_pressure']) #Pa
     } 
     return params2, props, sim2
@@ -348,6 +349,9 @@ class MonteCarlo:
                 print(cmds)
                 for i in range(len(self.tbl)):
                     run_cmdline(cmds[i])
+        elif isinstance(number, int):
+            cmd = prepare_cmds(1, pflotran_path, self.mcfolder, [number])
+            run_cmdline(cmd[0])
         else:
             print('Only \'all\' and \'incomplete\' options are implemented')
         return

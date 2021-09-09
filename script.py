@@ -3,8 +3,8 @@ import scipy.stats as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-meshtype = 'FourLayers'
-mcfolder = 'data/FourLayers'
+meshtype = 'Uniform'
+mcfolder = 'data/'+meshtype
 pflotran_path = '/home/ammilten/pflotran/src/pflotran/pflotran'
 
 # These parameters are constant for all simulations and cannot be uncertain
@@ -58,7 +58,8 @@ parameters = {
     'alpha':st.uniform(5e-5, 5e-4 - 5e-5),
     'm':st.uniform(0.1, 0.9),
     'satresid':st.uniform(0.05, 0.15),
-    'max_recharge':st.uniform(0.0005, 0.0045)
+    'max_recharge':st.uniform(0.0005, 0.0045),
+    'max_et_pct':st.uniform(0.5, 0.95)
 }
 
 ex = MC.MonteCarlo(mcfolder, overwrite=True, pflotran_path=pflotran_path) #initialize an empty MonteCarlo simulation
