@@ -3,7 +3,7 @@ import scipy.stats as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-meshtype = 'Uniform'
+meshtype = 'ShallowLayerFZ'
 mcfolder = 'data/'+meshtype
 pflotran_path = '/home/ammilten/pflotran/src/pflotran/pflotran'
 
@@ -26,7 +26,7 @@ parameters = {
     'dip':st.uniform(60,80),
     'H':st.truncnorm(0,200,loc=75,scale=25),
     'xpos':st.truncnorm(0,500,loc=380,scale=30),
-    'shdep':1, #ShallowLayerFZ only
+    'shdep':st.uniform(1, 15), #ShallowLayerFZ only
     'fpdep':st.uniform(0.25, 2.75), #FracZoneFloodplain only
     'Kh_bk':st.loguniform(1e-15, 1e-12),
     'Kr_bk':st.uniform(0.1, 1.25),
@@ -34,9 +34,9 @@ parameters = {
     'Kh_fz':st.loguniform(1e-14, 1e-12),
     'Kr_fz':st.uniform(0.1, 1.25),
     'por_fz':st.uniform(0.01, 0.15),
-    'Kh_sl':5e-15, # Shallow Layer
-    'Kr_sl':.5, # Shallow Layer
-    'por_sl':0.03, # Shallow Layer
+    'Kh_sl':st.loguniform(1e-15, 1e-12), # Shallow Layer
+    'Kr_sl':st.uniform(0.1, 1.25), # Shallow Layer
+    'por_sl':st.uniform(0.01, 0.25), # Shallow Layer
     'thx_ts':st.uniform(0.3, 0.7),
     'Kh_ts':st.loguniform(1e-15, 1e-12), #8.8e-13,
     'Kr_ts':st.uniform(0.1, 1.25),
@@ -59,7 +59,7 @@ parameters = {
     'm':st.uniform(0.1, 0.9),
     'satresid':st.uniform(0.05, 0.15),
     'max_recharge':st.uniform(0.0005, 0.0045),
-    'max_et_pct':st.uniform(0.5, 0.95)
+    'max_et_pct':0
 }
 
 ex = MC.MonteCarlo(mcfolder, overwrite=True, pflotran_path=pflotran_path) #initialize an empty MonteCarlo simulation
