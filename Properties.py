@@ -36,6 +36,30 @@ def exportRegionalDataset(mesh3D, props, fname):
     hf.close()
     return
     
+def exportExpDecayDataset(mesh3d, decaycoeffs, fname):
+    hf = h5py.File(fname,'w')
+    
+    por = np.ones(mesh3D.cellCount())
+    permX = np.ones(mesh3D.cellCount())
+    permZ = np.ones(mesh3D.cellCount())
+    
+    i = 0
+    for cell in mesh3D.cells():
+        dep = getDepth(cell)
+        por[i] = calculateExp(dep, decaycoeffs)
+        permX[i] = calculateExp(dep, decaycoeffs)
+        permZ[i] = permX[i]
+        i += 1
+        
+    hf.create_dataset('Cell Ids',data=cellIds)
+    hf.create_dataset('Porosity', data=por)
+    hf.create_dataset('Permeability', data=permX)
+    hf.create_dataset('PermX', data=permX)
+    hf.create_dataset('PermY', data=permX)
+    hf.create_dataset('PermZ', data=permZ)
+    hf.close()
+    return
+        
     
 class Properties:
     def __init__(self, GM, props, folder=None):
