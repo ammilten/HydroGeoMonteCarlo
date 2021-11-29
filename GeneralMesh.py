@@ -1,4 +1,4 @@
-from MeshTypes import FracZoneMesh, ShallowLayerFZMesh, FracZoneWithFloodplain, Uniform, FourLayers
+from MeshTypes import FracZoneMesh, ShallowLayerFZMesh, FracZoneWithFloodplain, Uniform, FourLayers, FracZoneFloodplainSoil
 import os
 import sys
 
@@ -106,6 +106,20 @@ class Mesh:
                 Q = params['Q'],
                 layerthx = params['layerthx'],
                 dep = params['dep'])
+        elif meshtype == 'FracZoneFloodplainSoil':
+            M = FracZoneFloodplainSoil.FZFPSMesh(
+                dip = params['dip'],
+                H = params['H'],
+                xpos = params['xpos'],
+                fpdep = params['fpdep'],
+                fplim = params['fplim'],
+                efile = params['efile'],
+                dep = params['dep'],
+                xtra = params['xtra'],
+                Q = params['Q'],
+                area = params['area'],
+                shdep = params['shdep']
+                )
         else:
             print('ERROR: Incorrect meshtype ('+meshtype+')')
             sys.exit('ERROR: Incorrect meshtype. Options are -FracZone- -ShallowLayerFZ- -Uniform- -FourLayers- -FracZoneFloodplain-')
