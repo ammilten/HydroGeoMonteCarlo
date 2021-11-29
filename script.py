@@ -3,7 +3,7 @@ import scipy.stats as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-meshtype = 'FourLayers'
+meshtype = 'FracZoneFloodplainSoil'
 mcfolder = 'data/'+meshtype
 pflotran_path = '/home/ammilten/pflotran/src/pflotran/pflotran'
 
