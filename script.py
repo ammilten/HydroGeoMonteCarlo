@@ -3,7 +3,7 @@ import scipy.stats as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-meshtype = 'ShallowLayerFZ'
+meshtype = 'FourLayers'
 mcfolder = 'data/'+meshtype
 pflotran_path = '/home/ammilten/pflotran/src/pflotran/pflotran'
 
@@ -66,6 +66,7 @@ ex = MC.MonteCarlo(mcfolder, overwrite=True, pflotran_path=pflotran_path) #initi
 ex.sim = simulation #set MonteCarlo simulation parameters
 ex.params = parameters #set MonteCarlo uncertain parameters
 ex.SampleParameters(N=1000) #sample some parameters
-ex.SetupRealization('all', overwrite=False, meshtype=meshtype)
-ex.Realize('incomplete', parallel=True, nproc=10) #realize all parameters, with option to overwrite
+ex.SetupRealization('all', overwrite=True, meshtype=meshtype)
+
+ex.Realize('all', parallel=True, nproc=10) #realize all parameters, with option to overwrite
 
