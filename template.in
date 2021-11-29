@@ -13,7 +13,9 @@ SUBSURFACE
 
 #=========================== numerical methods ================================
 NUMERICAL_METHODS FLOW
-
+  TIMESTEPPER
+    MAXIMUM_NUMBER_OF_TIMESTEPS 15000
+  /
 END
 
 #=========================== flow mode ========================================
@@ -112,6 +114,13 @@ OUTPUT
       LIQUID_SATURATION
     /
   /
+  MASS_BALANCE_FILE
+    PERIODIC TIME 
+    TOTAL_MASS_REGIONS
+      all
+      surface
+    /
+  /
 END
 
 
@@ -143,6 +152,25 @@ REGION rightchannel
   FILE right.ss
 /
 
+REGION lefthillslope_low
+  FILE lower_left.ss
+/
+
+REGION lefthillslope_up
+  FILE upper_left.ss
+/
+
+REGION righthillslope_low
+  FILE lower_right.ss
+/
+
+REGION righthillslope_up
+  FILE upper_right.ss
+/
+
+REGION floodplain
+  FILE floodplain.ss
+/
 
 REGION PLM1_piezometer
   COORDINATE 309.342d0 2.5d0 2779.939d0
@@ -193,6 +221,25 @@ FLOW_CONDITION snowmelt_cyclic
   /
 END
 
+FLOW_CONDITION et
+  TYPE
+    FLUX NEUMANN
+  /
+  CYCLIC
+  FLUX LIST
+    INTERPOLATION LINEAR
+    TIME_UNITS y
+    DATA_UNITS m/d
+    0. 0.
+    0.16 0.
+    0.29 
+    0.33 0.
+    0.54 -
+    0.75 0.
+    1. 0.
+  /
+END
+
 FLOW_CONDITION seepage
   TYPE
     PRESSURE SEEPAGE
@@ -217,13 +264,27 @@ INITIAL_CONDITION
 END
 
 
-BOUNDARY_CONDITION topright
+BOUNDARY_CONDITION righthillslope_low
   FLOW_CONDITION snowmelt_cyclic
-  REGION rightchannel
+  REGION righthillslope_low
 END
-BOUNDARY_CONDITION topleft
+BOUNDARY_CONDITION righthillslope_up
   FLOW_CONDITION snowmelt_cyclic
-  REGION leftchannel
+  REGION righthillslope_up
+END
+
+BOUNDARY_CONDITION lefthillslope_low
+  FLOW_CONDITION snowmelt_cyclic
+  REGION lefthillslope_low
+END
+BOUNDARY_CONDITION lefthillslope_up
+  FLOW_CONDITION snowmelt_cyclic
+  REGION lefthillslope_up
+END
+
+BOUNDARY_CONDITION floodplain
+  FLOW_CONDITION et
+  REGION floodplain
 END
 
 BOUNDARY_CONDITION seepage

@@ -3,7 +3,30 @@ from Properties import Properties
 from Regions import Regions
 from Simulation import Simulation
 
-import os  
+import os 
+
+import os
+
+def fix_xmf(filename):
+    dirname = os.path.dirname(filename)
+    
+    with open(filename, 'r') as file:
+        filedata = file.read()
+        
+    filedata = filedata.replace(dirname+'/simulation.h5', 'simulation.h5')
+    
+    with open(filename, 'w') as file:
+        file.write(filedata)
+        
+    return
+        
+def fix_all_xmfs(folder):
+    for file in os.listdir(folder):
+        if file.endswith(".xmf"):
+            fix_xmf(folder + '/' + file)
+    
+    return
+ 
 
 class Realization:
     def __init__(self, meshtype, meshparams, props, simparams, folder=None):
@@ -54,6 +77,9 @@ class Realization:
         cmd = "mpirun -n " + str(nproc) + " " + pflotran_path + " -pflotranin " + self.Simulation.file
         print(cmd)
         os.system(cmd)
+        
+        fix_all_xmfs(self.folder)
+        
         return
 
 if __name__ == "__main__":
