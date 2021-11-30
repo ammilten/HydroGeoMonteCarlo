@@ -68,5 +68,5 @@ ex.params = parameters #set MonteCarlo uncertain parameters
 ex.SampleParameters(N=1000) #sample some parameters
 ex.SetupRealization('all', overwrite=False, meshtype=meshtype)
 
-ex.Realize('all', overwrite=False, parallel=True, nproc=10) #realize all parameters, with option to overwrite
+ex.Realize('incomplete', parallel=True, nproc=10) #realize all parameters, with option to overwrite
 
