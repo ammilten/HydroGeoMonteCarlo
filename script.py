@@ -62,7 +62,7 @@ parameters = {
     'max_et_pct':0
 }
 
-ex = MC.MonteCarlo(mcfolder, overwrite=False, pflotran_path=pflotran_path) #initialize an empty MonteCarlo simulation
+ex = MC.MonteCarlo(mcfolder, overwrite=True, pflotran_path=pflotran_path) #initialize an empty MonteCarlo simulation
 ex.sim = simulation #set MonteCarlo simulation parameters
 ex.params = parameters #set MonteCarlo uncertain parameters
 ex.SampleParameters(N=1000) #sample some parameters
