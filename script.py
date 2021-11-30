@@ -62,11 +62,11 @@ parameters = {
     'max_et_pct':0
 }
 
-ex = MC.MonteCarlo(mcfolder, overwrite=True, pflotran_path=pflotran_path) #initialize an empty MonteCarlo simulation
+ex = MC.MonteCarlo(mcfolder, overwrite=False, pflotran_path=pflotran_path) #initialize an empty MonteCarlo simulation
 ex.sim = simulation #set MonteCarlo simulation parameters
 ex.params = parameters #set MonteCarlo uncertain parameters
 ex.SampleParameters(N=1000) #sample some parameters
-ex.SetupRealization('all', overwrite=True, meshtype=meshtype)
+ex.SetupRealization('incomplete', overwrite=True, meshtype=meshtype)
 
-ex.Realize('all', parallel=True, nproc=10) #realize all parameters, with option to overwrite
+ex.Realize('incomplete', parallel=True, nproc=10) #realize all parameters, with option to overwrite
 
